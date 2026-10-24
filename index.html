@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Blush Stock &amp; Sales</title>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#b4325f"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="mobile-web-app-capable" content="yes">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fbf5f3;--card:#fff;--ink:#2a1722;--mut:#85707a;--ac:#b4325f;--acs:#f6dde5;--ok:#2f7d5b;--oks:#dcf0e6;--wn:#a86a0f;--wns:#fbecd0;--bd:#ecdde0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#1b1117;--card:#271a21;--ink:#f6e9ee;--mut:#b49aa6;--ac:#ee7aa0;--acs:#47212f;--ok:#6fcf9f;--oks:#1c3a2c;--wn:#f0b45a;--wns:#43330f;--bd:#3a2832}}
+:root[data-theme=dark]{--bg:#1b1117;--card:#271a21;--ink:#f6e9ee;--mut:#b49aa6;--ac:#ee7aa0;--acs:#47212f;--ok:#6fcf9f;--oks:#1c3a2c;--wn:#f0b45a;--wns:#43330f;--bd:#3a2832}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 'DM Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:14px}
+h1{font-size:20px;margin:4px 0 2px}h2{font-size:17px;margin:14px 0 8px}.sub{color:var(--mut);font-size:13px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.k,.c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px}
+.k b{display:block;font-size:20px;margin-top:2px}.k span{font-size:12px;color:var(--mut)}
+.c{margin-bottom:8px}.r{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.m{color:var(--mut);font-size:12.5px}.n{font-weight:700}
+.ch{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:700}
+.PAID,.ok{background:var(--oks);color:var(--ok)}.UNPAID,.bad{background:var(--acs);color:var(--ac)}.PARTIAL,.low{background:var(--wns);color:var(--wn)}.OVERPAID{background:var(--wns);color:var(--wn)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--mut);padding:10px 0 8px;font:inherit;font-size:12px;font-weight:500}
+nav button.on{color:var(--ac);font-weight:700}nav button.s{color:#fff;background:var(--ac);border-radius:14px;margin:6px 4px;padding:6px 0}
+.seg{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}.seg button{border:1px solid var(--bd);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:13px}.seg button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+input,select{width:100%;font:inherit;padding:11px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--ink);margin:4px 0 10px}
+label{font-size:12.5px;color:var(--mut);display:block}
+.btn{width:100%;border:0;background:var(--ac);color:#fff;font:inherit;font-weight:700;padding:13px;border-radius:12px}
+.bar{height:6px;border-radius:9px;background:var(--bd);overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--ok)}
+#sh{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:9}
+#sh>div{background:var(--bg);width:100%;max-width:640px;margin:0 auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:85%;overflow:auto}
+#t{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;display:none;z-index:12;max-width:90%}
+.w{background:var(--wns);color:var(--wn);padding:10px;border-radius:10px;margin-bottom:10px;font-size:13px}
+</style></head><body>
+<main><div id="w"></div><div id="v"></div></main>
+<nav id="nav"></nav><div id="sh"><div id="shb"></div></div><div id="t"></div>
+<script>
+let D={rate:400,items:[],sales:[],pays:[]},API=localStorage.getItem('api')||'',PIN=localStorage.getItem('pin')||'';
+const $=s=>document.querySelector(s),esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>Math.round(n||0).toLocaleString('en-US'),K=s=>String(s||'').trim().toLowerCase();
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const fd=s=>s?new Date(s+'T00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'}):'';
+const days=s=>Math.max(0,Math.floor((new Date(today()+'T00:00')-new Date(s+'T00:00'))/864e5));
+let db=null,NS=[],NP=[],NF=[],tab='home',sv='stock',flt='all',q='',C=null;
+function calc(){
+ const ps={};D.pays.forEach(p=>ps[p.sid]=(ps[p.sid]||0)+p.amt);
+ const nq={},S=D.sales.map(s=>{const o={...s,ref:s.id,neu:1,paid:s.paid0+(ps[s.id]||0),total:s.qty*s.price};o.bal=Math.round(o.total-o.paid);o.st=o.bal<0?'OVERPAID':o.bal===0?'PAID':o.paid<=0?'UNPAID':'PARTIAL';const d=s.qty-s.q0,k=K(s.item);if(d)nq[k]=(nq[k]||0)+d;return o});
+ const I=D.items.map(i=>{const k=K(i.n),sold=i.sold0+(nq[k]||0),close=i.recv-sold,unit=i.cost/i.q;return{...i,k,sold,close,val:close*i.pl,unit,mg:i.pl-unit}});
+ const M={};I.forEach(i=>M[i.k]=i);
+ const dm={};S.forEach(s=>{const d=dm[s.cust]=dm[s.cust]||{n:s.cust,tot:0,paid:0,open:0,old:0};d.tot+=s.total;d.paid+=s.paid;if(s.bal>0){d.open++;d.old=Math.max(d.old,days(s.date))}});
+ const Dm=Object.values(dm).map(d=>({...d,bal:d.tot-d.paid})).sort((a,b)=>b.bal-a.bal);
+ return{S,I,M,Dm}
+}
+const kp=(l,v)=>`<div class=k><span>${l}</span><b>${v}</b></div>`;
+const chip=s=>`<span class="ch ${s}">${s}</span>`;
+function home(){
+ const u=C.I.reduce((a,i)=>a+i.close,0),v=C.I.reduce((a,i)=>a+i.val,0),t=C.S.reduce((a,s)=>a+s.total,0),p=C.S.reduce((a,s)=>a+s.paid,0);
+ const low=C.I.filter(i=>i.close>0&&i.close<=24).sort((a,b)=>a.close-b.close),out=C.I.filter(i=>i.close<=0).length;
+ const rec=[...C.S].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id)).slice(0,5);
+ return`<h1>Blush Stock &amp; Sales</h1><div class=sub>Live stock on hand, sales and debts</div><h2></h2><div class=g>${kp('Units in stock',fmt(u))}${kp('Stock value (plan price)','TSh '+fmt(v))}${kp('Total sales','TSh '+fmt(t))}${kp('Collected','TSh '+fmt(p))}</div><div class=c style="margin-top:10px"><div class=r><span class=m>Still owed by customers</span><b style="color:var(--ac)">TSh ${fmt(t-p)}</b></div></div>
+ <h2>Running low <span class=m>(${out} sold out)</span></h2>${low.map(i=>`<div class="c r"><span>${esc(i.n)}</span><span class="ch low">${i.close} left</span></div>`).join('')||'<div class=m>Nothing running low.</div>'}
+ <h2>Latest sales</h2>${rec.map(saleCard).join('')}<h2>Export to Excel</h2><div class=seg><button data-a=ex data-v=s>Sales (CSV)</button><button data-a=ex data-v=i>Stock (CSV)</button><button data-a=setup>Settings</button><button data-a=rl>Refresh</button></div>`}
+function stockV(){
+ const sg=`<div class=seg><button data-a=sv data-v=stock class="${sv=='stock'?'on':''}">Stock on hand</button><button data-a=sv data-v=ship class="${sv=='ship'?'on':''}">Shipments &amp; plan</button></div><input id=qi placeholder="Search item" value="${esc(q)}">`;
+ const L=C.I.filter(i=>!q||K(i.n).includes(K(q)));
+ if(sv=='ship'){const tc=C.I.reduce((a,i)=>a+i.cost,0),tr=C.I.reduce((a,i)=>a+i.ret,0);
+  return`<h1>Shipments &amp; plan</h1><div class=sub>Rate TSh ${D.rate} per ¥ · cost includes shared shipping</div>${sg}<div class=g>${kp('Total import cost','TSh '+fmt(tc))}${kp('Planned profit','TSh '+fmt(tr-tc))}</div><h2></h2>`+L.map(i=>`<div class=c><div class=r><span class=n>${esc(i.n)}</span><span class=m>${esc(i.ph)}</span></div><div class=m>${i.q} planned · ¥${i.cy} each (${esc(i.mode)}) · agent ${esc(i.ag||'-')}${i.sh?' · '+esc(i.sh):''}</div><div class=r style="margin-top:6px"><span class=m>Cost TSh ${fmt(i.cost)}</span><span class=m>Return TSh ${fmt(i.ret)}</span></div><div class=r><span class=m>Arrived Dar ${fd(i.dd)||'-'}${i.def?' · defective '+i.def:''}</span><b style="color:var(--ok)">+${fmt(i.ret-i.cost)}</b></div></div>`).join('')}
+ return`<h1>Stock on hand</h1>${sg}`+L.map(i=>{const pc=i.recv?Math.max(0,Math.min(100,i.close/i.recv*100)):0;return`<div class=c><div class=r><span class=n>${esc(i.n)}</span><span class="ch ${i.close<=0?'bad':i.close<=24?'low':'ok'}">${i.close} left</span></div><div class=bar><i style="width:${pc}%"></i></div><div class=r style="margin-top:6px"><span class=m>Imported ${i.recv} · sold ${i.sold}</span><span class=m>Value TSh ${fmt(i.val)}</span></div><div class=m>Plan price ${fmt(i.pl)} · cost/unit ${fmt(i.unit)} · margin ${fmt(i.mg)} (${i.pl?Math.round(i.mg/i.pl*100):0}%)</div></div>`}).join('')}
+function sellV(){return`<h1>Register a sale</h1><div class=sub>Stock is deducted automatically</div><h2></h2><label>Item</label><select id=si></select><div class=m id=av style="margin:-6px 0 10px"></div><label>Customer</label><input id=sc list=cl placeholder="Customer name" autocomplete=off><datalist id=cl>${C.Dm.map(d=>`<option value="${esc(d.n)}">`).join('')}</datalist><div class=g><div><label>Quantity</label><input id=sq type=number inputmode=numeric min=1></div><div><label>Unit price (TSh)</label><input id=sp type=number inputmode=decimal></div></div><div class=g><div><label>Paid now (TSh)</label><input id=sd type=number inputmode=decimal placeholder=0></div><div><label>Date</label><input id=sdt type=date value="${today()}"></div></div><div class=c id=pv>Total TSh 0</div><button class=btn id=go>Save sale</button>`}
+function fillItems(){const s=$('#si');if(!s)return;const cur=s.value;s.innerHTML=C.I.map(i=>`<option value="${esc(i.k)}"${i.close<=0?' disabled':''}>${esc(i.n)} (${i.close} left)</option>`).join('');if(cur&&C.M[cur]&&C.M[cur].close>0)s.value=cur;else{const f=C.I.find(i=>i.close>0);if(f)s.value=f.k;setPrice()}upd()}
+function setPrice(){const i=C.M[$('#si').value];if(i)$('#sp').value=i.pl}
+function upd(){const i=C.M[$('#si').value];if(!i)return;$('#av').textContent='Available: '+i.close+' · cost/unit TSh '+fmt(i.unit);const t=(+$('#sq').value||0)*(+$('#sp').value||0),p=+$('#sd').value||0;$('#pv').innerHTML=`Total <b>TSh ${fmt(t)}</b> · balance <b>TSh ${fmt(t-p)}</b>`+(t&&t-p>0?' (credit)':'')}
+async function api(act,body){if(!API){setupV();throw new Error('Not connected')}
+ const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({act,pin:PIN,...body})}),j=await r.json();
+ if(!j.ok)throw new Error(j.err||'Error');D=j.data;return j}
+async function load(){if(!API)return setupV();
+ try{const r=await fetch(API+'?pin='+encodeURIComponent(PIN)),j=await r.json();if(!j.ok)throw new Error(j.err);D=j.data;$('#w').innerHTML='';draw()}
+ catch(e){$('#w').innerHTML='<div class=w>Could not reach the sheet: '+esc(e.message)+' <a href=# data-a=setup>Settings</a></div>'}}
+function setupV(){$('#shb').innerHTML=`<h2 style="margin:0">Connect to your sheet</h2><div class=m>Paste the web app URL and passcode from your Google Apps Script.</div><h2></h2><label>Web app URL</label><input id=au value="${esc(API)}" placeholder="https://script.google.com/macros/s/.../exec"><label>Passcode</label><input id=ap type=password value="${esc(PIN)}"><button class=btn data-a=ss>Connect</button>`;$('#sh').style.display='flex'}
+async function save(){
+ const i=C.M[$('#si').value],cust=$('#sc').value.trim(),qty=+$('#sq').value,price=+$('#sp').value,paid=+$('#sd').value||0;
+ if(!i||!cust||!(qty>0)||!(price>0))return toast('Fill item, customer, quantity and price');
+ if(qty>i.close)return toast('Only '+i.close+' in stock');
+ if(paid>qty*price+1)return toast('Paid is more than the sale total');
+ $('#go').disabled=true;
+ try{await api('addSale',{item:i.n,cust,qty,price,paid,date:$('#sdt').value||today()});toast('Sale saved');tab='sales';flt='all';q='';draw()}catch(e){toast('Could not save: '+e.message);$('#go').disabled=false}}
+function saleCard(s){return`<div class=c data-a=sale data-v="${esc(s.ref)}"><div class=r><span class=n>${esc(s.item.trim())}</span>${chip(s.st)}</div><div class=r><span class=m>${s.id} · ${fd(s.date)} · ${esc(s.cust)}</span><span class=m>${s.qty} × ${fmt(s.price)}</span></div><div class=r><span class=m>Total ${fmt(s.total)}</span>${s.bal>0?`<b style="color:var(--ac)">Owes ${fmt(s.bal)}${days(s.date)?' · '+days(s.date)+'d':''}</b>`:`<span class=m>Paid ${fmt(s.paid)}</span>`}</div></div>`}
+function salesV(){const L=[...C.S].filter(s=>(flt=='all'||(flt=='owe'?s.bal>0:s.bal<=0))&&(!q||K(s.cust+s.item+s.id).includes(K(q)))).sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id));
+ return`<h1>Sales</h1><div class=seg>${[['all','All'],['owe','Owing'],['paid','Cleared']].map(([v,l])=>`<button data-a=fl data-v=${v} class="${flt==v?'on':''}">${l}</button>`).join('')}</div><input id=qi placeholder="Search customer, item or ID" value="${esc(q)}">`+(L.map(saleCard).join('')||'<div class=m>No sales found.</div>')}
+function debtsV(){const L=C.Dm.filter(d=>d.bal>0.5);const tot=L.reduce((a,d)=>a+d.bal,0);
+ return`<h1>Debtors</h1><div class=sub>Tap a customer to see their sales</div><h2></h2><div class=k><span>Total owed</span><b style="color:var(--ac)">TSh ${fmt(tot)}</b></div><h2></h2>`+L.map(d=>`<div class=c data-a=cust data-v="${esc(d.n)}"><div class=r><span class=n>${esc(d.n)}</span><b style="color:var(--ac)">TSh ${fmt(d.bal)}</b></div><div class=bar><i style="width:${Math.min(100,d.paid/d.tot*100)}%"></i></div><div class=r style="margin-top:6px"><span class=m>Paid ${fmt(d.paid)} of ${fmt(d.tot)}</span><span class=m>${d.open} open · oldest ${d.old}d</span></div></div>`).join('')}
+function sheet(ref){const s=C.S.find(x=>x.ref==ref);if(!s)return;
+ const hp=D.pays.filter(p=>p.sid==ref).map(p=>({d:p.date,a:p.amt,m:p.method,id:p.pid})).sort((a,b)=>a.d>b.d?1:-1);
+ $('#shb').innerHTML=`<div class=r><h2 style="margin:0">${s.id} · ${esc(s.cust)}</h2>${chip(s.st)}</div><div class=m>${esc(s.item.trim())} · ${s.qty} × ${fmt(s.price)} · ${fd(s.date)}</div><div class=r style="margin:10px 0"><span>Total ${fmt(s.total)}</span><span>Paid ${fmt(s.paid)}</span><b>Balance ${fmt(s.bal)}</b></div>${hp.map(p=>`<div class="r m"><span>${fd(p.d)} · ${esc(p.m||'')}</span><span>${fmt(p.a)}${p.id?` <button data-a=dp data-v="${esc(p.id)}" style="border:0;background:none;color:var(--ac);font-size:16px">✕</button>`:''}</span></div>`).join('')}`+(s.bal>0?`<h2>Add payment</h2><label>Amount (TSh)</label><input id=pa type=number inputmode=decimal value="${s.bal}"><label>Method</label><select id=pm><option>Cash</option><option>M-Pesa / Mobile</option><option>Bank</option></select><button class=btn id=pg data-v="${esc(ref)}">Save payment</button>`:'')+`<button class=btn style="background:var(--card);color:var(--ink);border:1px solid var(--bd);margin-top:8px" data-a=ed data-v="${esc(ref)}">Edit sale</button><button class=btn style="background:var(--card);color:var(--ink);border:1px solid var(--bd);margin-top:8px" data-a=x>Close</button>`;$('#sh').style.display='flex'}
+async function pay(ref){const s=C.S.find(x=>x.ref==ref),a=+$('#pa').value;if(!(a>0))return toast('Enter an amount');if(a>s.bal+1)return toast('More than the balance owed');
+ try{await api('addPay',{sid:ref,amt:a,method:$('#pm').value,date:today()});$('#sh').style.display='none';toast('Payment saved');draw()}catch(e){toast('Could not save: '+e.message)}}
+function editForm(ref){const s=C.S.find(x=>x.ref==ref);if(!s)return;$('#shb').innerHTML=`<h2 style="margin:0">Edit ${s.id}</h2><div class=m>${esc(s.item.trim())}${s.neu?'':' · imported sale'}</div><h2></h2><label>Customer</label><input id=ec value="${esc(s.cust)}"><div class=g><div><label>Quantity</label><input id=eq type=number value=${s.qty}></div><div><label>Unit price</label><input id=ep type=number value=${s.price}></div></div><label>Total paid so far (TSh)</label><input id=ed type=number value=${Math.round(s.paid)}><button class=btn data-a=se data-v="${esc(ref)}">Save changes</button>${s.neu?`<button class=btn style="background:var(--card);color:var(--ac);border:1px solid var(--bd);margin-top:8px" data-a=ds data-v="${esc(ref)}">Delete this sale</button>`:''}<button class=btn style="background:var(--card);color:var(--ink);border:1px solid var(--bd);margin-top:8px" data-a=x>Cancel</button>`}
+async function saveEdit(ref){const s=C.S.find(x=>x.ref==ref),cust=$('#ec').value.trim(),qty=+$('#eq').value,price=+$('#ep').value,paid=+$('#ed').value||0,base=paid-D.pays.filter(p=>p.sid==ref).reduce((a,p)=>a+p.amt,0);if(!cust||!(qty>0)||!(price>0))return toast('Fill customer, quantity and price');const it=C.M[K(s.item)];if(it&&qty-s.qty>it.close)return toast('Only '+it.close+' more in stock');
+ try{await api('updateSale',{id:ref,cust,qty,price,paid0:base});$('#sh').style.display='none';toast('Sale updated');draw()}catch(e){toast('Could not save: '+e.message)}}
+async function delSale(ref){if(!confirm('Delete this sale and its payments? Stock is returned.'))return;try{await api('deleteSale',{id:ref});$('#sh').style.display='none';toast('Sale deleted');draw()}catch(e){toast('Could not delete: '+e.message)}}
+async function delPay(id){if(!confirm('Remove this payment?'))return;try{await api('deletePay',{pid:id});$('#sh').style.display='none';toast('Payment removed');draw()}catch(e){toast('Could not remove: '+e.message)}}
+function exp(w){const rows=w=='s'?[['ID','Date','Item','Customer','Qty','Unit price','Total','Paid','Balance','Status'],...C.S.map(s=>[s.id,s.date,s.item,s.cust,s.qty,s.price,s.total,s.paid,s.bal,s.st])]:[['Item','Imported','Sold','Closing','Plan price','Stock value','Cost per unit'],...C.I.map(i=>[i.n,i.recv,i.sold,i.close,i.pl,i.val,Math.round(i.unit)])];
+ const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=w=='s'?'sales.csv':'stock.csv';a.click()}
+function toast(m){const t=$('#t');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2600)}
+function draw(){C=calc();
+ $('#nav').innerHTML=[['home','Home'],['stock','Stock'],['sell','+ Sell'],['sales','Sales'],['debts','Debts']].map(([t,l])=>`<button data-a=tab data-v=${t} class="${tab==t?'on':''} ${t=='sell'?'s':''}">${l}</button>`).join('');
+ const sellOn=tab=='sell';
+ if(sellOn&&$('#si')&&$('#go')){fillItems();return}
+ $('#v').innerHTML={home,stock:stockV,sell:sellV,sales:salesV,debts:debtsV}[tab]();
+ if(sellOn)fillItems()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a],#go,#pg');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
+ if(b.id=='go')return save();if(b.id=='pg')return pay(v);
+ if(a=='tab'){tab=v;q='';if(v=='sales')flt='all';scrollTo(0,0);draw()}
+ else if(a=='sv'){sv=v;draw()}else if(a=='fl'){flt=v;draw()}
+ else if(a=='sale')sheet(v);else if(a=='ed')editForm(v);else if(a=='se')saveEdit(v);else if(a=='ds')delSale(v);else if(a=='dp')delPay(v);else if(a=='ex')exp(v);else if(a=='rl')load();else if(a=='setup')setupV();else if(a=='ss'){API=$('#au').value.trim();PIN=$('#ap').value;localStorage.setItem('api',API);localStorage.setItem('pin',PIN);$('#sh').style.display='none';load()}else if(a=='x')$('#sh').style.display='none';
+ else if(a=='cust'){tab='sales';q=v;flt='owe';draw()}});
+document.addEventListener('input',e=>{if(e.target.id=='qi'){q=e.target.value;const p=e.target.selectionStart;draw();const n=$('#qi');n.focus();n.setSelectionRange(p,p)}
+ else if(['sq','sp','sd'].includes(e.target.id))upd()});
+document.addEventListener('change',e=>{if(e.target.id=='si'){setPrice();upd()}});
+$('#sh').addEventListener('click',e=>{if(e.target.id=='sh')$('#sh').style.display='none'});
+draw();
+const u=new URLSearchParams(location.search);if(u.get('u')){API=u.get('u');PIN=u.get('p')||'';localStorage.setItem('api',API);localStorage.setItem('pin',PIN);history.replaceState(null,'',location.pathname)}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+load();setInterval(()=>{if(API&&$('#sh').style.display!=='flex'&&!(tab=='sell'))load()},30000);
+</script></body></html>
